@@ -4,8 +4,10 @@ The goals of this project.
 ## Contributors
 |組員|系級|學號|工作分配|
 |-|-|-|-|
-|何大南|資科碩二|110753202|團隊中的吉祥物🦒，負責增進團隊氣氛| 
-|張小明|資科碩二|xxxxxxxxx|團隊的中流砥柱，一個人打十個|
+|陳品萱|資科碩一|112971018|團隊的中流砥柱，一個人打十個|
+|林宴葶|資科碩一|112971022|團隊的中流砥柱，一個人打十個|
+|傅國書|資科碩一|112971025|年記最大的團員，負責模型的訓練及測試部份|
+|張祐誠|資科碩一|112971013|團隊中的吉祥物🦒，負責增進團隊氣氛| 
 
 ## Quick start
 Please provide an example command or a few commands to reproduce your analysis, such as the following R script:
