@@ -52,7 +52,7 @@ best_nrounds <- cv_result$best_iteration
 
 model <- xgb.train(
   params = params,
-  data = data_matrix,
+  data = train_matrix,
   nrounds = best_nrounds,
   verbose = TRUE
 )
