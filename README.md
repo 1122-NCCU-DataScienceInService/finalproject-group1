@@ -35,7 +35,7 @@ profiling -> clean -> feature_engineering -> Training
 
 ## Source code description
 
-*Project detail was written in docs/profiling.Rmd files.**
+*Project detail was written in docs/profiling.Rmd files.*
 
 ### docs
     * presentation.Rmd: our project presentation Rmarkdown
