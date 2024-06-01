@@ -1,0 +1,38 @@
+---
+title: "Data Cleaning"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Overview
+
+The steps involved in data cleaning:
+
+1. Check whether the data types are correct for each variable using `str()` function.
+
+2. Handling Missing Values:
+    
+    2.1. Perform KNN (K-Nearest Neighbors) imputation specifically for the "TotalCharges" variable.
+
+3. Standardizing Data(Convert text to a consistent case):
+
+    3.1. Conditionally transform values that start with "N" and replace them with "No".
+
+## Comparison of Original and Cleaned Data
+
+- Original Data
+```{r, echo=FALSE}
+original_data <- read.csv("../raw/WA_Fn-UseC_-Telco-Customer-Churn.csv")
+# Summary statistics for the original dataset
+str(original_data)
+```
+
+- Cleaned Data
+```{r, echo=FALSE}
+cleaned_data<- read.csv("./imputed_dataset.csv")
+# Summary statistics for the cleaned dataset
+str(cleaned_data)
+```

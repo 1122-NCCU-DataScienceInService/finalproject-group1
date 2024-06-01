@@ -1,0 +1,72 @@
+---
+title: "Feature Engineering"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(corrplot)
+library(randomForest)
+library(car)
+```
+
+## Overview
+
+The steps involved in feature engineering:
+
+1. Remove specific columns ("customerID" and "TotalCharges")
+
+    1.1. The removal of "customerID" is typically an identifier column that doesn't contain useful information for modeling
+    
+    1.2. The removal of "TotalCharges" is justified by its high correlation with other columns ("MonthlyCharges" x "tenure" = "TotalCharges"), potentially leading to multicollinearity issues in modeling.
+    
+- model_with_totalcharges:
+    
+```{r, echo=FALSE}
+data <- read.csv("../clean/imputed_dataset.csv")
+model_with_totalcharges <- lm(TotalCharges ~ MonthlyCharges + tenure, data=data)
+summary(model_with_totalcharges)
+```
+    
+- model_without_totalcharges:
+    
+```{r, echo=FALSE}
+model_without_totalcharges <- lm(MonthlyCharges ~ tenure, data=data)
+summary(model_without_totalcharges)
+```
+    
+- ANOVA table:
+    
+```{r, echo=FALSE}
+anova(model_with_totalcharges, model_without_totalcharges)
+```
+
+2. Encoding Categorical Variables:
+
+    2.1. Label Encoding: Converting categorical data to numbers where the order matters.
+    
+    2.2. One-Hot Encoding: Converting categorical data to a binary (0 or 1) format.
+
+3. Scaling and Normalization:
+
+    3.1. Min-Max Scaling: Scaling data to a fixed range 0 to 1.
+
+4. Oversample the Minority Class:
+
+    4.1. Random Oversampling: New instances are essentially duplicates of existing minority class instances, leading to an increase in the number of samples belonging to the minority class.
+
+## Comparison of Cleaned Data and Feature-engineered Data
+
+- Cleaned Data
+```{r, echo=FALSE}
+original_data <- read.csv("../clean/imputed_dataset.csv")
+# Summary statistics for the original dataset
+str(original_data)
+```
+
+- Feature-engineered Data
+```{r, echo=FALSE}
+cleaned_data<- read.csv("./feature_set.csv")
+# Summary statistics for the cleaned dataset
+str(cleaned_data)
+```

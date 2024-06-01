@@ -1,0 +1,24 @@
+﻿Column Name,Description,Remark
+CustomerID,識別每個客戶的唯一 ID,String
+Gender,顧客的性別,"Male, Female"
+Age,財務季度結束時客戶的當前年齡（以年為單位）,Number
+Senior Citizen,是否年滿 65 歲,"Yes, No"
+Married (Partner),是否已婚,"Yes, No"
+Dependents,是否與任何家屬同住,"Yes, No. "
+Number of Dependents,是否與任何受扶養人同住,"Yes, No. "
+Phone Service,是否向公司訂購了家庭電話服務,"Yes, No"
+Multiple Lines,是否與公司預訂了多條電話線路,"Yes, No"
+Internet Service,是否向本公司訂購網路服務,"No, DSL, Fiber Optic, Cable."
+Online Security,是否訂閱了公司提供的附加線上安全服務,"Yes, No"
+Online Backup,是否訂閱了本公司提供的附加線上備份服務,"Yes, No"
+Device Protection Plan,是否訂閱了該公司為其互聯網設備提供的附加設備保護計劃,"Yes, No"
+Premium Tech Support,是否訂閱了公司的附加技術支援計劃以減少等待時間,"Yes, No"
+Streaming TV,是否使用其網路服務從第三方供應商串流媒體電視節目,"Yes, No. "
+Streaming Movies,是否使用其 Internet 服務從第三方供應商串流影片,"Yes, No."
+Contract,客戶目前的合約類型,"Month-to-Month, One Year, Two Year."
+Paperless Billing,客戶是否選擇無紙化計費,"Yes, No"
+Payment Method,客戶如何支付帳單,"Bank Withdrawal, Credit Card, Mailed Check"
+Monthly Charge,客戶目前每月為本公司提供的所有服務支付的總費用,Number
+Total Charges,截至上述指定季度末計算的客戶總費用,Number
+Tenure,客戶在公司工作的總月數,Number
+Churn,是 = 客戶本季離開了公司；否 = 客戶仍留在公司,"Yes, No"

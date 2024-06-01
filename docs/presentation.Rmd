@@ -1,0 +1,477 @@
+---
+title: "[1122_DS] Final Project"
+date: 
+output: 
+  html_document:
+    toc: true
+    toc_depth: 4
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+    number_sections: true
+---
+
+----
+
+
+# **Overview**
+
+## **Data Source**
+
+[Kaggle - Telco Customer Churn](https://www.kaggle.com/datasets/blastchar/telco-customer-churn)
+
+```{R load-and-table, echo=FALSE, message=FALSE, warning=FALSE}
+library(readr)
+library(DataExplorer)
+library(ggplot2)
+library(tidyverse)
+library(knitr)
+dictionary <- read_csv("../data/raw/column_dic.csv")
+kable(dictionary)
+```
+
+
+## **Analytics Target**
+- 什麼樣特徵的人容易 Churn?
+- 誰會 Churn? 準確度多少?
+- 我們能夠可以有什麼 Retension Program?
+
+
+
+----
+
+# **Data Profiling**
+
+Read the dataset.
+
+```{R echo = FALSE, message=FALSE, warning=FALSE}
+dataset <- read_csv("../data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv")
+```
+
+## **Introduce the Data**
+
+### `introduce` (exclude?)
+
+```{R echo = FALSE}
+intro <- introduce(dataset)
+kable(intro)
+```
+
+### `plot_intro`
+
+**Plot basic description for the data, including:**
+
+- columns (features) : discrete / continuous, missing columns
+
+- rows (customers) : complete rows.
+
+- missing observations.
+
+```{R echo = FALSE}
+plot_intro(dataset)
+```
+
+### `plot_missing`
+
+**Only display the features which have missing data.**
+
+
+```{R echo = FALSE}
+plot_missing(dataset, missing_only = TRUE)
+```
+
+
+## **Discrete**
+
+### `plot_bar`
+
+Show the descrete data.
+
+
+```{R echo = FALSE}
+plot_bar(dataset, by = "Churn", ncol = 2L, nrow = 4L,by_position = "stack", binary_as_factor = FALSE,  )
+```
+
+
+## **Continuous**
+
+### `plot_histogram`
+
+Show the continuous data.
+
+```{R echo = FALSE}
+plot_histogram(dataset, binary_as_factor = TRUE, )
+```
+
+### `plot_qq` (w/o "Churn")
+
+Q-Q plot : campare the data (scatter) with the other distribution (line).
+
+```{R echo = FALSE}
+plot_qq(dataset, nrow=2L, ncol=2L,)
+```
+
+
+### `plot_qq` (w/i "Churn")
+
+Q-Q plot : campare the data (scatter) with the other distribution (line).
+
+```{R echo = FALSE}
+plot_qq(dataset, nrow=2L, ncol=2L, by = "Churn" ) 
+```
+
+
+
+### `plot_boxplot`
+
+Box plot - Plot the outlier with `red`.
+
+```{R echo = FALSE}
+plot_boxplot(dataset, by = "Churn", binary_as_factor = FALSE, geom_boxplot_args = list("outlier.color" = "red"))
+```
+
+
+### `plot_prcomp`
+
+PCA
+
+```{R echo = FALSE}
+plot_prcomp(na.omit(dataset), nrow = 1L, ncol = 2L, )
+```
+
+
+# **Data Cleaning**
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Overview
+
+The steps involved in data cleaning:
+
+1. Check whether the data types are correct for each variable using `str()` function.
+
+2. Handling Missing Values:
+    
+    2.1. Perform KNN (K-Nearest Neighbors) imputation specifically for the "TotalCharges" variable.
+
+3. Standardizing Data(Convert text to a consistent case):
+
+    3.1. Conditionally transform values that start with "N" and replace them with "No".
+
+## Comparison of Original and Cleaned Data
+
+- Original Data
+```{r, echo=FALSE}
+original_data <- read.csv("../data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv")
+# Summary statistics for the original dataset
+str(original_data)
+```
+
+- Cleaned Data
+```{r, echo=FALSE}
+cleaned_data<- read.csv("../data/clean/imputed_dataset.csv")
+# Summary statistics for the cleaned dataset
+str(cleaned_data)
+```
+
+
+# **Feature Engineering**
+```{r include=FALSE}
+library(corrplot)
+library(randomForest)
+```
+
+## Overview
+
+The steps involved in feature engineering:
+
+1. Remove the specific column "TotalCharges":
+    
+    1.1. The removal of 'TotalCharges' from the model is justified due to its high correlation with 'MonthlyCharges' and 'tenure'. Since 'TotalCharges' is mathematically derived as the product of 'MonthlyCharges' and 'tenure', it does not provide additional independent information. Including 'TotalCharges' in the model can lead to redundancy and potential multicollinearity issues.
+    
+- model_with_totalcharges:
+    
+```{r, echo=FALSE}
+data <- read.csv("../clean/imputed_dataset.csv")
+model_with_totalcharges <- lm(TotalCharges ~ MonthlyCharges + tenure, data=data)
+summary(model_with_totalcharges)
+```
+    
+- ANOVA table:
+    
+```{r, echo=FALSE}
+anova(model_with_totalcharges)
+```
+
+ANOVA table indicates that both the variables "MonthlyCharges" and "tenure" have a significant influence on the variable "TotalCharges." The significance is determined by the associated p-values, which are described as "extremely low" in this statement. A low p-value typically suggests strong evidence against the null hypothesis, indicating that the observed relationship between the predictor variables and the outcome variable is unlikely to be due to chance alone.
+
+2. Encoding Categorical Variables:
+
+    2.1. Label Encoding: Converting categorical data to numbers where the order matters.
+    
+    2.2. One-Hot Encoding: Converting categorical data to a binary (0 or 1) format.
+
+3. Scaling and Normalization:
+
+    3.1. Min-Max Scaling: Scaling data to a fixed range 0 to 1.
+
+
+## Comparison of Cleaned Data and Feature-engineered Data
+
+- Cleaned Data
+```{r, echo=FALSE}
+original_data <- read.csv("../clean/imputed_dataset.csv")
+# Summary statistics for the original dataset
+str(original_data)
+```
+
+- Feature-engineered Data
+```{r, echo=FALSE}
+cleaned_data<- read.csv("./feature_set.csv")
+# Summary statistics for the cleaned dataset
+str(cleaned_data)
+
+
+----
+
+# **Model Training**
+
+1. Read the dataset
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+library(readr)
+library(ggplot2)
+library(lattice)
+library(caret)
+library(xgboost)
+library(pROC)
+library(dplyr)
+library(png)
+```
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+data <- read_csv("../data/feature/feature_set.csv")
+```
+
+
+2. Separate the data into training and testing set
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+n <- nrow(data)
+data <- data[sample(n),]  #將資料進行隨機排列
+index <- createDataPartition(data$Churn, p = 0.8, list = FALSE)
+train_data <- data[index, ] 
+test_data <- data[-index, ]
+```
+
+3. Using training set to train the xgboost model 
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+train_matrix <- xgb.DMatrix(data = as.matrix(train_data[-c(1, which(names(train_data) == "Churn"))]), label = train_data$Churn)
+
+test_matrix <- xgb.DMatrix(data = as.matrix(test_data[-c(1, which(names(test_data) == "Churn"))]), label = test_data$Churn)
+```
+
+4. k-fold cross validation
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+params <- list(
+  objective = "binary:logistic",
+  eval_metric = "auc",
+  eta = 0.1,
+  max_depth = 6
+)
+
+nrounds <- 100
+nfold <- 5
+early_stopping_rounds <- 10
+verbose <- 1
+
+# using xgb.cv to do k-fold cross validation 
+cv_result <- xgb.cv(
+  params = params,
+  data = train_matrix,
+  nrounds = nrounds,
+  nfold = nfold,
+  early_stopping_rounds = early_stopping_rounds,
+  verbose = verbose
+)
+```
+
+```{r echo=TRUE, message=TRUE, warning=FALSE}
+print(cv_result)
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Create DMatrix object
+data_matrix <- xgb.DMatrix(data = as.matrix(data[-c(1, which(names(data) == "Churn"))]), label = data$Churn)
+
+# get the best iteration
+best_nrounds <- cv_result$best_iteration
+
+model <- xgb.train(
+  params = params,
+  data = data_matrix,
+  nrounds = best_nrounds,
+  verbose = TRUE
+)
+```
+
+5. Predict label and probability
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+train_pred <- predict(model, train_matrix)
+train_predicted_label <- ifelse(train_pred > 0.5, 1, 0)
+
+test_pred <- predict(model, test_matrix)
+test_predicted_label <- ifelse(test_pred > 0.5, 1, 0)
+```
+
+6. Compute the ROC of training and testing data
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+roc_train <- roc(train_data$Churn, train_pred)
+roc_test <- roc(test_data$Churn, test_pred)
+
+auc_train <- auc(roc_train)
+auc_test <- auc(roc_test)
+
+print(paste("AUC of training data: ", auc_train))
+print(paste("AUC of testing data: ", auc_test))
+```
+
+7. Null model comparison
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Null model prediction: using the mean of Churn in the training set as the probability
+mean_churn <- mean(train_data$Churn)
+null_train_pred <- rep(mean_churn, nrow(train_data))
+null_test_pred <- rep(mean_churn, nrow(test_data))
+
+# Compute the ROC of null model
+roc_null_train <- roc(train_data$Churn, null_train_pred)
+roc_null_test <- roc(test_data$Churn, null_test_pred)
+auc_null_train <- auc(roc_null_train)
+auc_null_test <- auc(roc_null_test)
+```
+
+Print AUC values for the null model
+
+```{r echo=TRUE, warning=FALSE}
+# Print AUC values for the null model
+print(paste("AUC for null model on training data: ", auc_null_train))
+print(paste("AUC for null model on testing data: ", auc_null_test))
+
+# 使用 DeLong 檢驗比較兩個 AUC
+roc_test_xgb <- roc(test_data$Churn, test_pred)
+roc_test_null <- roc(test_data$Churn, null_test_pred)
+
+# DeLong 檢驗
+delong_test <- roc.test(roc_test_xgb, roc_test_null, method="delong")
+
+# 輸出檢驗結果
+print(delong_test)
+```
+
+8. Feature importance and ranking
+```{r echo=TRUE, warning=FALSE}
+importance_matrix <- xgb.importance(model = model, feature_names = colnames(train_data[-c(1, which(names(train_data) == "Churn"))]))
+xgb.plot.importance(importance_matrix)
+```
+
+9. Save the prediction result
+```{r echo=TRUE, warning=FALSE}
+train_results <- data.frame(customerID = train_data$customerID, label = train_predicted_label, probability = train_pred, groundtruth = train_data$Churn)
+
+test_results <- data.frame(customerID = test_data$customerID, label = test_predicted_label, probability = test_pred, groundtruth = test_data$Churn)
+
+write_csv(train_results, "train_predictions.csv")
+write_csv(test_results, "test_predictions.csv")
+
+head(test_results, 5)
+```
+
+10. Save the feature importance result
+```{r echo=TRUE, warning=FALSE}
+write_csv(importance_matrix, "feature_importance.csv")
+head(importance_matrix, 5)
+```
+
+11. Save the XGBoost model
+```{r echo=TRUE, warning=FALSE}
+xgb.save(model, "../model/churn_prediction_model.xgb")
+```
+
+12. Save the ROC curve
+```{r echo=TRUE, warning=FALSE}
+# Assuming roc_train_plot and roc_test_plot are ggplot objects for ROC curves
+roc_train_plot <- ggroc(roc_train) + ggtitle("ROC Curve - Training Data")
+roc_test_plot <- ggroc(roc_test) + ggtitle("ROC Curve - Testing Data")
+
+# Save ROC curves
+ggsave("roc_train.png", plot = roc_train_plot)
+ggsave("roc_test.png", plot = roc_test_plot)
+
+print(roc_train_plot)
+print(roc_test_plot)
+```
+
+----
+
+# **Lift Analysis Introduction**
+
+Lift analysis 是一種在資料科學和機器學習中常用的評估技術，尤其在行銷和推薦系統中十分常見。主要目的是衡量一個策略、活動或模型相對於隨機選擇的效果提升。以下是 Lift analysis 的一些關鍵點：
+
+## Definition
+$Lift$ 是一個比率，表示目標行為在有策略介入時的發生率，與無策略介入時的發生率之比。
+
+公式為 $$ Lift = \frac {P(B|A)}{P(B)}$$
+
+其中 $P(B∣A)$ 是在條件 $A$ 下發生 $B$ 的概率，而 $P(B)$ 是無條件下發生 $B$ 的概率。
+
+## Goal
+$Lift$ 分析幫助確定某個特定行動或模型是否對結果有正向影響，以及這個影響是否顯著超過隨機事件。
+
+## Applocation
+* 行銷活動：分析特定行銷活動對購買行為的影響。
+* 推薦系統：評估推薦算法是否有效提高用戶的點擊率或購買率。
+* 風險評估：在金融業中，用於評估某策略對減少欺詐行為的有效性。
+
+## Pros and Cons
+* 優點：直觀，容易理解和溝通；有助於快速識別最有效的策略或客戶群體。
+* 限制：不考慮潛在的偏誤或外部影響因素；高 $Lift$ 值不一定代表高絕對效益，特別是基礎概率 $P(B)$ 很低時。
+
+(Credit by ChatGPT)
+
+```{r echo=TRUE, warning=FALSE}
+# sorting by probability
+test_results <- test_results[order(-test_results$probability),]
+
+head(test_results, 10)
+
+# Segmenat the customer
+test_results$decile <- cut(test_results$probability, breaks=quantile(test_results$probability, probs=seq(0, 1, by = 0.1)), include.lowest=TRUE, labels=FALSE)
+
+# Reverse the decilne numbering
+test_results$decile <- 11 - test_results$decile
+
+head(test_results, 5)
+
+# 計算每個分組的實際響應率和 Lift
+test_lift_df <- test_results %>%
+  group_by(decile) %>%
+  summarise(
+    count = n(),
+    num_responses = sum(label),
+    response_rate = mean(label),
+    lift = response_rate / mean(data$Churn)
+  )
+
+plot <- ggplot(test_lift_df, aes(x = as.factor(decile), y = lift)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(title = "Lift Chart", x = "Decile", y = "Lift") +
+  theme_minimal()
+
+# 使用 ggsave 保存圖形
+ggsave("lift_chart.png", plot, width = 10, height = 6, dpi = 300)
+img <- readPNG("lift_chart.png")
+print(plot)
+
+# Save the lift data to CSV
+write.csv(test_lift_df, "lift_data.csv", row.names = FALSE)
+head(test_lift_df, 10)
+```
