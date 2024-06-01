@@ -1,24 +1,87 @@
 ---
-title: "[1122_DS] Final Project"
-date: 
-output: 
+title: "1122_DS Final Project - Group1"
+output:
   html_document:
     toc: true
-    toc_depth: 4
+    toc_depth: 2
     toc_float:
       collapsed: false
       smooth_scroll: false
     number_sections: true
+  pdf_document:
+    toc: true
+    toc_depth: 2
 ---
 
 ----
 
+# **Contributors**
+
+|組員|系級|學號|工作分配|
+|-|-|-|-|
+|陳品瑄|資科碩一|112971018|數據概要、R markdown 彙整|
+|林宴葶|資科碩一|112971022|數據進行清理和處理特徵工程|
+|傅國書|資科碩一|112971025|年紀最大的團員，負責模型的訓練及測試部份|
+|張祐誠|資科碩一|112971013|分析流程與程式架構規劃、程式彙整、報告說明撰寫| 
+
+----
 
 # **Overview**
 
+Retension(客戶留存) 對於每一間企業的客戶關係管理 Customer Relationship Management (CRM) 都是十分重要的。
+
+這個比率關乎企業在帶進行新客戶時，可以留下多少客戶。企業要留得住客戶，才有辦法長久發展。
+
+在這個期末報告中，我們將使用 Kaggle Telco-customer-churn 的資料集，找出哪些客戶可能不再使用公司服務。
+
+對客戶流失前進行挽留的行銷活動，為企業留住客戶。
+
+## **Analytics Highlight**
+
+在這個專案中，我們實作了一個在客戶關係管理中，偵測哪些客戶會流失的模型
+
+我們採用了預測能力非常高的 XGBoost 模型做預測
+
+採用 ROC, AUC, Lift Analysis 以及 Null Model Analysis 來評估模型成效
+
+在預測的結果中，我們可以針對最容易流失的客戶，讓企業對潛在流失戶做精準行銷挽留客戶
+
+
 ## **Data Source**
 
-[Kaggle - Telco Customer Churn](https://www.kaggle.com/datasets/blastchar/telco-customer-churn)
+  [**Kaggle - Telco Customer Churn**](https://www.kaggle.com/datasets/blastchar/telco-customer-churn)
+
+
+* **實務情境**
+
+  預測行為以留住客戶。
+  
+  可以分析所有相關的客戶資料並進一步制定有針對性的客戶保留計劃。
+
+* **Raw Data**
+
+  每個 row 代表一個客戶。
+  
+  每個 column 代表所描述的客戶屬性。
+
+* **Detailed Information**
+
+  * **Churn:**
+
+      **前一個月內**離開的客戶
+
+  * **每位客戶註冊的服務:**
+
+      家庭電話服務、多條電話線路、網路服務、附加網路安全服務、線上備份服務、網路設備附加保護計劃、額外的技術支援服務、串流媒體電視節目、電影
+
+  * **客戶訂閱資訊:** 
+
+      該客戶訂閱服務時間、合約、付款方式、無紙化帳單、每月費用、總費用等
+
+  * **客戶個資:**
+
+      性別、年齡區間、獨居或與他人同住等
+
 
 ```{R load-and-table, echo=FALSE, message=FALSE, warning=FALSE}
 library(readr)
@@ -32,17 +95,15 @@ kable(dictionary)
 
 
 ## **Analytics Target**
-- 什麼樣特徵的人容易 Churn?
-- 誰會 Churn? 準確度多少?
-- 我們能夠可以有什麼 Retension Program?
 
+  * 什麼樣特徵的人容易 Churn?
+
+  * 誰會 Churn? 準確度多少?
 
 
 ----
 
 # **Data Profiling**
-
-Read the dataset.
 
 ```{R echo = FALSE, message=FALSE, warning=FALSE}
 dataset <- read_csv("../data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv")
@@ -50,33 +111,53 @@ dataset <- read_csv("../data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv")
 
 ## **Introduce the Data**
 
-### `introduce` (exclude?)
-
-```{R echo = FALSE}
+### `introduce`
+    
+```{R echo = TRUE, message=FALSE, warning=FALSE}
 intro <- introduce(dataset)
 kable(intro)
 ```
 
+  * `rows = 7043`
+
+  * `columns = 21`
+
+  * `discrete_columns = 17`
+
+  * `continuous_columns = 4`
+
+  * `all_missing_columns = 0`
+
+  * `total_missing_values = 11`
+
+  * `complete_rows = 7032`
+
+  * `total_observations = 147,903`
+
+  * `memory_usage = 1,641,832 (Bytes)`
+
+
+
 ### `plot_intro`
 
-**Plot basic description for the data, including:**
+**資料基本描述**
 
-- columns (features) : discrete / continuous, missing columns
+  * columns (features) : 離散資料欄位、連續資料欄位、無資料欄位
 
-- rows (customers) : complete rows.
+  * complete rows (customers) : 完整資料的客戶數
 
-- missing observations.
+  * missing observations : 缺失値
 
-```{R echo = FALSE}
+```{R echo = TRUE, message=FALSE, warning=FALSE}
 plot_intro(dataset)
 ```
 
 ### `plot_missing`
 
-**Only display the features which have missing data.**
+  **只顯示有 missing value 的欄位**
 
 
-```{R echo = FALSE}
+```{R echo = TRUE, message=FALSE, warning=FALSE}
 plot_missing(dataset, missing_only = TRUE)
 ```
 
@@ -84,11 +165,13 @@ plot_missing(dataset, missing_only = TRUE)
 ## **Discrete**
 
 ### `plot_bar`
+  
+  * 離散資料
+  
+  * 以顏色區分 Churn
 
-Show the descrete data.
 
-
-```{R echo = FALSE}
+```{R echo = FALSE, message=FALSE, warning=FALSE}
 plot_bar(dataset, by = "Churn", ncol = 2L, nrow = 4L,by_position = "stack", binary_as_factor = FALSE,  )
 ```
 
@@ -97,48 +180,43 @@ plot_bar(dataset, by = "Churn", ncol = 2L, nrow = 4L,by_position = "stack", bina
 
 ### `plot_histogram`
 
-Show the continuous data.
+  * 連續資料
+  
+    * 每月費用
+    
+    * 該客戶訂閱服務時間
+    
+    * 總費用
 
 ```{R echo = FALSE}
 plot_histogram(dataset, binary_as_factor = TRUE, )
 ```
 
-### `plot_qq` (w/o "Churn")
-
-Q-Q plot : campare the data (scatter) with the other distribution (line).
-
-```{R echo = FALSE}
-plot_qq(dataset, nrow=2L, ncol=2L,)
-```
-
-
-### `plot_qq` (w/i "Churn")
-
-Q-Q plot : campare the data (scatter) with the other distribution (line).
-
-```{R echo = FALSE}
-plot_qq(dataset, nrow=2L, ncol=2L, by = "Churn" ) 
-```
 
 
 
 ### `plot_boxplot`
 
-Box plot - Plot the outlier with `red`.
+  * 連續資料
+    * 每月費用
+    * 該客戶訂閱服務時間
+    * 總費用
 
-```{R echo = FALSE}
-plot_boxplot(dataset, by = "Churn", binary_as_factor = FALSE, geom_boxplot_args = list("outlier.color" = "red"))
+```{R echo = FALSE, message=FALSE, warning=FALSE}
+plot_boxplot(dataset, by = "Churn", binary_as_factor = TRUE, geom_boxplot_args = list("outlier.color" = "red"))
 ```
 
+
+## **PCA**
 
 ### `plot_prcomp`
 
-PCA
 
-```{R echo = FALSE}
+```{R echo = FALSE, message=FALSE, warning=FALSE}
 plot_prcomp(na.omit(dataset), nrow = 1L, ncol = 2L, )
 ```
 
+----
 
 # **Data Cleaning**
 
@@ -146,100 +224,119 @@ plot_prcomp(na.omit(dataset), nrow = 1L, ncol = 2L, )
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Overview
+## **Overview**
 
 The steps involved in data cleaning:
 
-1. Check whether the data types are correct for each variable using `str()` function.
+  1. **Check whether the data types are correct for each variable using `str()` function.**
 
-2. Handling Missing Values:
+  2. **Handling Missing Values:**
     
-    2.1. Perform KNN (K-Nearest Neighbors) imputation specifically for the "TotalCharges" variable.
+      2.1. Perform KNN (K-Nearest Neighbors) imputation specifically for the "TotalCharges" variable.
 
-3. Standardizing Data(Convert text to a consistent case):
+  3. **Standardizing Data(Convert text to a consistent case):**
 
-    3.1. Conditionally transform values that start with "N" and replace them with "No".
+      3.1. Conditionally transform values that start with "N" and replace them with "No".
 
-## Comparison of Original and Cleaned Data
+## **Comparison of Original and Cleaned Data**
 
-- Original Data
+* **Original Data**
+
 ```{r, echo=FALSE}
 original_data <- read.csv("../data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv")
 # Summary statistics for the original dataset
 str(original_data)
 ```
 
-- Cleaned Data
+* **Cleaned Data**
+
 ```{r, echo=FALSE}
 cleaned_data<- read.csv("../data/clean/imputed_dataset.csv")
 # Summary statistics for the cleaned dataset
 str(cleaned_data)
 ```
 
+----
 
 # **Feature Engineering**
+
 ```{r include=FALSE}
 library(corrplot)
 library(randomForest)
 ```
 
-## Overview
+## **Overview**
 
 The steps involved in feature engineering:
 
-1. Remove the specific column "TotalCharges":
+1. **Remove the specific column "TotalCharges":**
     
-    1.1. The removal of 'TotalCharges' from the model is justified due to its high correlation with 'MonthlyCharges' and 'tenure'. Since 'TotalCharges' is mathematically derived as the product of 'MonthlyCharges' and 'tenure', it does not provide additional independent information. Including 'TotalCharges' in the model can lead to redundancy and potential multicollinearity issues.
+  The removal of 'TotalCharges' from the model is justified due to its high correlation with 'MonthlyCharges' and 'tenure'. 
+  
+  Since 'TotalCharges' is mathematically derived as the product of 'MonthlyCharges' and 'tenure', 
     
-- model_with_totalcharges:
+  it does not provide additional independent information. 
+      
+  Including 'TotalCharges' in the model can lead to redundancy and potential multicollinearity issues.
+    
+* **model_with_totalcharges:**
     
 ```{r, echo=FALSE}
-data <- read.csv("../clean/imputed_dataset.csv")
+data <- read.csv("../data/clean/imputed_dataset.csv")
 model_with_totalcharges <- lm(TotalCharges ~ MonthlyCharges + tenure, data=data)
 summary(model_with_totalcharges)
 ```
     
-- ANOVA table:
+* **ANOVA table:**
     
 ```{r, echo=FALSE}
 anova(model_with_totalcharges)
 ```
 
-ANOVA table indicates that both the variables "MonthlyCharges" and "tenure" have a significant influence on the variable "TotalCharges." The significance is determined by the associated p-values, which are described as "extremely low" in this statement. A low p-value typically suggests strong evidence against the null hypothesis, indicating that the observed relationship between the predictor variables and the outcome variable is unlikely to be due to chance alone.
+  ANOVA table indicates that both the variables "MonthlyCharges" and "tenure" have a significant influence on the variable "TotalCharges."
 
-2. Encoding Categorical Variables:
+  The significance is determined by the associated p-values, which are described as "extremely low" in this statement. 
 
-    2.1. Label Encoding: Converting categorical data to numbers where the order matters.
-    
-    2.2. One-Hot Encoding: Converting categorical data to a binary (0 or 1) format.
+  A low p-value typically suggests strong evidence against the null hypothesis, 
 
-3. Scaling and Normalization:
-
-    3.1. Min-Max Scaling: Scaling data to a fixed range 0 to 1.
+  indicating that the observed relationship between the predictor variables and the outcome variable is unlikely to be due to chance alone.
 
 
-## Comparison of Cleaned Data and Feature-engineered Data
+2.**Encoding Categorical Variables:**
 
-- Cleaned Data
+  * **Label Encoding**: Converting categorical data to numbers where the order matters.
+
+  * **One-Hot Encoding**: Converting categorical data to a binary (0 or 1) format.
+
+3.**Scaling and Normalization:**
+
+  * **Min-Max Scaling**: Scaling data to a fixed range 0 to 1.
+
+
+## **Comparison of Cleaned Data and Feature-engineered Data**
+
+* **Cleaned Data**
+
 ```{r, echo=FALSE}
-original_data <- read.csv("../clean/imputed_dataset.csv")
+original_data <- read.csv("../data/clean/imputed_dataset.csv")
 # Summary statistics for the original dataset
 str(original_data)
 ```
 
-- Feature-engineered Data
+* **Feature-engineered Data**
+
 ```{r, echo=FALSE}
-cleaned_data<- read.csv("./feature_set.csv")
+cleaned_data<- read.csv("../data/feature/feature_set.csv")
 # Summary statistics for the cleaned dataset
 str(cleaned_data)
+```
 
 
 ----
 
 # **Model Training**
 
-1. Read the dataset
-```{r echo = FALSE, message=FALSE, warning=FALSE}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 library(readr)
 library(ggplot2)
 library(lattice)
@@ -249,12 +346,16 @@ library(pROC)
 library(dplyr)
 library(png)
 ```
+
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 data <- read_csv("../data/feature/feature_set.csv")
 ```
 
 
-2. Separate the data into training and testing set
+## **Separate the Data**
+
+  Separate the data into training and testing set
+
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 n <- nrow(data)
 data <- data[sample(n),]  #將資料進行隨機排列
@@ -263,14 +364,50 @@ train_data <- data[index, ]
 test_data <- data[-index, ]
 ```
 
-3. Using training set to train the xgboost model 
+## **Select Model**
+
+  Using training set to train the `xgboost` model.
+
+* **為何選擇 XGBoost Model ?**
+
+  XGBoost (eXtreme Gradient Boosting) 是一種梯度提升樹模型，它是通過迭代地訓練一系列決策樹，
+
+  每一棵樹都是針對前一棵樹的殘差進行訓練，然後將這些決策樹組合以得出最終預測結果。
+
+* **XGBoost 具有下列優點**:
+
+  * **高準確性**：XGBoost 擅長處理大量數據和複雜模式，因此通常具有較高的預測準確性。
+  
+  * **強大的正則化**：XGBoost 支持 L1 和 L2 正則化，這有助於防止過度擬合，提高模型的泛化能力。
+  
+  * **快速執行速度**：相對於其他機器學習算法，XGBoost 通常執行速度較快，尤其是在大型數據集上。
+
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 train_matrix <- xgb.DMatrix(data = as.matrix(train_data[-c(1, which(names(train_data) == "Churn"))]), label = train_data$Churn)
 
 test_matrix <- xgb.DMatrix(data = as.matrix(test_data[-c(1, which(names(test_data) == "Churn"))]), label = test_data$Churn)
 ```
 
-4. k-fold cross validation
+## **K-Fold**
+
+**k-fold cross validation**
+
+  * `objective`：模型的目標函數，採用 `binary:logistic` 執行二元分類任務，使用 **logistic 回歸**作為目標函數
+
+  * `eval_metric`：評估指標的設置，採用 `auc` 評估模型對二元分類問題的預測能力
+
+  * `eta`：learning rate，`eta = 0.1`
+
+  * `max_depth`：樹的最大深度限制，此參數控制每棵決策樹的深度，**避免過度擬合**，`max_depth = 6`
+
+  * `nrounds`：訓練迭代的次數，`nrounds = 100` 
+
+  * `nfold`：cross validation fold數，`nfold = 5`
+
+  * `early_stopping_rounds`：提前停止的輪數，當模型在連續幾輪迭代中**沒有顯著改善時提前停止訓練避免過度擬合**，`early_stopping_rounds = 10` 
+
+  * `verbose`：顯示訓練過程的詳細程度，`verbose = 1` 表示在訓練過程中顯示詳細訊息，包含每輪訓練的效果
+
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 params <- list(
   objective = "binary:logistic",
@@ -299,6 +436,28 @@ cv_result <- xgb.cv(
 print(cv_result)
 ```
 
+
+  1. **高AUC評分**：第 30 次反覆運算的 AUC 評分是整個反覆運算過程中最高的，達到了 0.841223
+
+  2. **合理的標準差**：標準差 0.01424375 相對較小，表明模型的性能在不同的交叉驗證折次中較為穩定
+
+  
+    相比之下，後續的反覆運算雖然也達到了類似的 AUC 評分，但並沒有顯著超過第 30 次反覆運算的 AUC 評分，
+    而且有些反覆運算的 AUC 評分反而有所下降。
+  
+  
+
+  *例如：*
+
+  *第 31 次反覆運算的 test-auc 是 0.8411549	，比第 30 次反覆運算低。*
+
+  *第 32 次反覆運算的 test-auc 是 0.8407787，也比第 31 次反覆運算低。*
+
+  *此外，在第 30 次反覆運算之後，儘管訓練集上的 AUC 評分（train-auc）不斷上升，*
+
+  *但測試集上的 AUC 評分並沒有明顯改善，甚至有所波動，這可能表明模型開始**過擬合**訓練數據。*
+
+
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Create DMatrix object
 data_matrix <- xgb.DMatrix(data = as.matrix(data[-c(1, which(names(data) == "Churn"))]), label = data$Churn)
@@ -314,7 +473,8 @@ model <- xgb.train(
 )
 ```
 
-5. Predict label and probability
+## **Predict Label and Probability**
+
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 train_pred <- predict(model, train_matrix)
 train_predicted_label <- ifelse(train_pred > 0.5, 1, 0)
@@ -323,7 +483,10 @@ test_pred <- predict(model, test_matrix)
 test_predicted_label <- ifelse(test_pred > 0.5, 1, 0)
 ```
 
-6. Compute the ROC of training and testing data
+## **Compute the ROC**
+
+  Compute the ROC of training and testing data
+
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 roc_train <- roc(train_data$Churn, train_pred)
 roc_test <- roc(test_data$Churn, test_pred)
@@ -335,13 +498,23 @@ print(paste("AUC of training data: ", auc_train))
 print(paste("AUC of testing data: ", auc_test))
 ```
 
-7. Null model comparison
+## **Null Model Comparison**
+
+* **Null model prediction**
+
+  根據 Chrun 的平均值來進行預測
+
+
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Null model prediction: using the mean of Churn in the training set as the probability
 mean_churn <- mean(train_data$Churn)
 null_train_pred <- rep(mean_churn, nrow(train_data))
 null_test_pred <- rep(mean_churn, nrow(test_data))
+```
 
+* **Compute the ROC of null model**
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Compute the ROC of null model
 roc_null_train <- roc(train_data$Churn, null_train_pred)
 roc_null_test <- roc(test_data$Churn, null_test_pred)
@@ -349,7 +522,7 @@ auc_null_train <- auc(roc_null_train)
 auc_null_test <- auc(roc_null_test)
 ```
 
-Print AUC values for the null model
+* **Print AUC values for the null model**
 
 ```{r echo=TRUE, warning=FALSE}
 # Print AUC values for the null model
@@ -367,13 +540,24 @@ delong_test <- roc.test(roc_test_xgb, roc_test_null, method="delong")
 print(delong_test)
 ```
 
-8. Feature importance and ranking
+   ***XGboost model 顯著高於 null model***
+
+
+## **Feature Importance and Ranking**
+
+  XGBoost 基於每個特徵在所有樹中減少損失的貢獻來計算這些分數
+
+  有助於了解哪些特徵對模型的預測能力貢獻最大
+
 ```{r echo=TRUE, warning=FALSE}
 importance_matrix <- xgb.importance(model = model, feature_names = colnames(train_data[-c(1, which(names(train_data) == "Churn"))]))
 xgb.plot.importance(importance_matrix)
 ```
 
-9. Save the prediction result
+## **Save the Results**
+
+**1. Save the prediction result**
+
 ```{r echo=TRUE, warning=FALSE}
 train_results <- data.frame(customerID = train_data$customerID, label = train_predicted_label, probability = train_pred, groundtruth = train_data$Churn)
 
@@ -385,18 +569,21 @@ write_csv(test_results, "test_predictions.csv")
 head(test_results, 5)
 ```
 
-10. Save the feature importance result
+**2. Save the feature importance result**
+
 ```{r echo=TRUE, warning=FALSE}
 write_csv(importance_matrix, "feature_importance.csv")
 head(importance_matrix, 5)
 ```
 
-11. Save the XGBoost model
+**3. Save the XGBoost model**
+
 ```{r echo=TRUE, warning=FALSE}
 xgb.save(model, "../model/churn_prediction_model.xgb")
 ```
 
-12. Save the ROC curve
+**4. Save the ROC curve**
+
 ```{r echo=TRUE, warning=FALSE}
 # Assuming roc_train_plot and roc_test_plot are ggplot objects for ROC curves
 roc_train_plot <- ggroc(roc_train) + ggtitle("ROC Curve - Training Data")
@@ -414,26 +601,34 @@ print(roc_test_plot)
 
 # **Lift Analysis Introduction**
 
-Lift analysis 是一種在資料科學和機器學習中常用的評估技術，尤其在行銷和推薦系統中十分常見。主要目的是衡量一個策略、活動或模型相對於隨機選擇的效果提升。以下是 Lift analysis 的一些關鍵點：
+  Lift analysis 是一種在資料科學和機器學習中常用的評估技術，尤其在行銷和推薦系統中十分常見，
 
-## Definition
-$Lift$ 是一個比率，表示目標行為在有策略介入時的發生率，與無策略介入時的發生率之比。
+  主要目的是**衡量一個策略、活動或模型相對於隨機選擇的效果提**升。
 
-公式為 $$ Lift = \frac {P(B|A)}{P(B)}$$
+  以下是 Lift analysis 的一些關鍵點：
 
-其中 $P(B∣A)$ 是在條件 $A$ 下發生 $B$ 的概率，而 $P(B)$ 是無條件下發生 $B$ 的概率。
+## **Definition**
 
-## Goal
-$Lift$ 分析幫助確定某個特定行動或模型是否對結果有正向影響，以及這個影響是否顯著超過隨機事件。
+  $Lift$ 是一個比率，表示目標行為在有策略介入時的發生率，與無策略介入時的發生率之比。
 
-## Applocation
-* 行銷活動：分析特定行銷活動對購買行為的影響。
-* 推薦系統：評估推薦算法是否有效提高用戶的點擊率或購買率。
-* 風險評估：在金融業中，用於評估某策略對減少欺詐行為的有效性。
+  公式為 $$ Lift = \frac {P(B|A)}{P(B)}$$
 
-## Pros and Cons
-* 優點：直觀，容易理解和溝通；有助於快速識別最有效的策略或客戶群體。
-* 限制：不考慮潛在的偏誤或外部影響因素；高 $Lift$ 值不一定代表高絕對效益，特別是基礎概率 $P(B)$ 很低時。
+  其中 $P(B∣A)$ 是在條件 $A$ 下發生 $B$ 的概率，而 $P(B)$ 是無條件下發生 $B$ 的概率。
+
+## **Goal**
+
+  $Lift$ 分析幫助確定某個特定行動或模型是否對結果有正向影響，以及這個影響是否顯著超過隨機事件。
+
+## **Application**
+
+  * **行銷活動**：分析特定行銷活動對購買行為的影響。
+  * **推薦系統**：評估推薦算法是否有效提高用戶的點擊率或購買率。
+  * **風險評估**：在金融業中，用於評估某策略對減少欺詐行為的有效性。
+
+## **Pros and Cons**
+
+  * **優點**：直觀，容易理解和溝通；有助於快速識別最有效的策略或客戶群體。
+  * **限制**：不考慮潛在的偏誤或外部影響因素；高 $Lift$ 值不一定代表高絕對效益，特別是基礎概率 $P(B)$ 很低時。
 
 (Credit by ChatGPT)
 
