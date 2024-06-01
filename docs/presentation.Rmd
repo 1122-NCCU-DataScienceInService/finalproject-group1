@@ -561,6 +561,8 @@ importance_matrix <- xgb.importance(model = model, feature_names = colnames(trai
 xgb.plot.importance(importance_matrix)
 ```
 
+***可以看出 Contract feature裡 Month.to.month：這個特徵具有最高的重要性分數，表示它是最重要的預測變數。
+
 ## **Save the Results**
 
 **1. Save the prediction result**
