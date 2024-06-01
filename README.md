@@ -24,10 +24,10 @@ Retension(客戶留存) 對於每一間企業的客戶關係管理 Customer Rela
 ## Quick start
 ```R
 我們將資料處理的流程拆分在不同的 R 腳本中：
-* 探索式分析:Rscript code/profiling.R
-* 資料清理：Rscript code/clean.R
-* 特徵工程：Rscript code/feature_engineering.R
-* 模型訓練：Rscript code/Training.R
+* 探索式分析: Rscript code/profiling.R
+* 資料清理: Rscript code/clean.R
+* 特徵工程: Rscript code/feature_engineering.R
+* 模型訓練: Rscript code/Training.R
 
 基本的 Workflow:
 profiling -> clean -> feature_engineering -> Training
