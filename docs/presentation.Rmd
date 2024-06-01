@@ -378,7 +378,7 @@ test_data <- data[-index, ]
 
   * **高準確性**：XGBoost 擅長處理大量數據和複雜模式，因此通常具有較高的預測準確性。
   
-  * **強大的正則化**：XGBoost 支持 L1 和 L2 正則化，這有助於防止過度擬合，提高模型的泛化能力。
+  * **強大的正則化**：XGBoost 支持 L1 和 L2 正規化，這有助於防止over fitting，提高模型的泛化能力(Generation Ability)。
   
   * **快速執行速度**：相對於其他機器學習算法，XGBoost 通常執行速度較快，尤其是在大型數據集上。
 
@@ -398,7 +398,7 @@ test_matrix <- xgb.DMatrix(data = as.matrix(test_data[-c(1, which(names(test_dat
 
   * `eta`：learning rate，`eta = 0.1`
 
-  * `max_depth`：樹的最大深度限制，此參數控制每棵決策樹的深度，**避免過度擬合**，`max_depth = 6`
+  * `max_depth`：樹的最大深度限制，此參數控制每棵決策樹的深度，**避免over fitting**，`max_depth = 6`
 
   * `nrounds`：訓練迭代的次數，`nrounds = 100` 
 
@@ -437,25 +437,23 @@ print(cv_result)
 ```
 
 
-  1. **高AUC評分**：第 30 次反覆運算的 AUC 評分是整個反覆運算過程中最高的，達到了 0.841223
+  1. **高AUC評分**：第 31 次反覆運算的 AUC 評分是整個反覆運算過程中最高的，達到了 0.8439923
 
-  2. **合理的標準差**：標準差 0.01424375 相對較小，表明模型的性能在不同的交叉驗證折次中較為穩定
+  2. **合理的標準差**：標準差 0.006611932 相對較小，表明模型的性能在不同的交叉驗證折次中較為穩定
 
   
-    相比之下，後續的反覆運算雖然也達到了類似的 AUC 評分，但並沒有顯著超過第 30 次反覆運算的 AUC 評分，
+    相比之下，後續的反覆運算雖然也達到了類似的 AUC 評分，但並沒有顯著超過第 31 次反覆運算的 AUC 評分，
     而且有些反覆運算的 AUC 評分反而有所下降。
   
   
 
   *例如：*
 
-  *第 31 次反覆運算的 test-auc 是 0.8411549	，比第 30 次反覆運算低。*
+  *第 32 次反覆運算的 test-auc 是 0.8438350	，比第 31 次反覆運算低。*
 
-  *第 32 次反覆運算的 test-auc 是 0.8407787，也比第 31 次反覆運算低。*
+  *此外，在第 31 次反覆運算之後，儘管訓練集上的 AUC 評分（train-auc）不斷上升，*
 
-  *此外，在第 30 次反覆運算之後，儘管訓練集上的 AUC 評分（train-auc）不斷上升，*
-
-  *但測試集上的 AUC 評分並沒有明顯改善，甚至有所波動，這可能表明模型開始**過擬合**訓練數據。*
+  *但測試集上的 AUC 評分並沒有明顯改善，甚至有所波動，這可能表明模型開始**over fitting**訓練數據。*
 
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -482,6 +480,8 @@ train_predicted_label <- ifelse(train_pred > 0.5, 1, 0)
 test_pred <- predict(model, test_matrix)
 test_predicted_label <- ifelse(test_pred > 0.5, 1, 0)
 ```
+
+*使用模型對訓練集和測試集分別進行預測，然後將預測的機率值轉換成二分類標籤。
 
 ## **Compute the ROC**
 
@@ -540,7 +540,14 @@ delong_test <- roc.test(roc_test_xgb, roc_test_null, method="delong")
 print(delong_test)
 ```
 
-   ***XGboost model 顯著高於 null model***
+  ***DeLong 檢定是一種用於比較兩條相關的受試者操作特徵（ROC）曲線下面積（AUC）的統計方法
+  ***檢定統計量 Z = 42.437  表示兩個模型的 AUC 差異較大
+  ***p =2.2e-16，這是一個非常小的值，表明 AUC 之間的差異具有統計學意義。通常，p 值小於 0.05 被認為是顯著的，因此這個結果非常顯著
+  ***- AUC 差異的 95% 信賴區間為 [0.3658094, 0.4012353]。這意味著我們有 95% 的信心認為真實的 AUC 差異在這個區間內。由於該區間不包含 0，這進一步支持 AUC 之間存在顯著差異的結論。
+  ***DeLong 檢定表明，兩條ROC曲線的 AUC 之間存在統計學上顯著的差異。XGBoost顯著優於null model，這從高Z值、極低的p-value 以及 AUC 差異的信賴區間可以看出
+
+
+***
 
 
 ## **Feature Importance and Ranking**
