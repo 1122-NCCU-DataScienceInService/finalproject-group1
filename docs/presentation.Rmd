@@ -384,7 +384,6 @@ test_data <- data[-index, ]
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 train_matrix <- xgb.DMatrix(data = as.matrix(train_data[-c(1, which(names(train_data) == "Churn"))]), label = train_data$Churn)
-
 test_matrix <- xgb.DMatrix(data = as.matrix(test_data[-c(1, which(names(test_data) == "Churn"))]), label = test_data$Churn)
 ```
 
@@ -458,14 +457,14 @@ print(cv_result)
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Create DMatrix object
-data_matrix <- xgb.DMatrix(data = as.matrix(data[-c(1, which(names(data) == "Churn"))]), label = data$Churn)
+# data_matrix <- xgb.DMatrix(data = as.matrix(data[-c(1, which(names(data) == "Churn"))]), label = data$Churn)
 
 # get the best iteration
 best_nrounds <- cv_result$best_iteration
 
 model <- xgb.train(
   params = params,
-  data = data_matrix,
+  data = train_matrix,
   nrounds = best_nrounds,
   verbose = TRUE
 )
@@ -540,14 +539,17 @@ delong_test <- roc.test(roc_test_xgb, roc_test_null, method="delong")
 print(delong_test)
 ```
 
-  ***DeLong 檢定是一種用於比較兩條相關的受試者操作特徵（ROC）曲線下面積（AUC）的統計方法
-  ***檢定統計量 Z = 42.437  表示兩個模型的 AUC 差異較大
-  ***p =2.2e-16，這是一個非常小的值，表明 AUC 之間的差異具有統計學意義。通常，p 值小於 0.05 被認為是顯著的，因此這個結果非常顯著
-  ***- AUC 差異的 95% 信賴區間為 [0.3658094, 0.4012353]。這意味著我們有 95% 的信心認為真實的 AUC 差異在這個區間內。由於該區間不包含 0，這進一步支持 AUC 之間存在顯著差異的結論。
-  ***DeLong 檢定表明，兩條ROC曲線的 AUC 之間存在統計學上顯著的差異。XGBoost顯著優於null model，這從高Z值、極低的p-value 以及 AUC 差異的信賴區間可以看出
-
-
-***
+  * DeLong 檢定是一種用於比較兩條相關的受試者操作特徵（ROC）曲線下面積（AUC）的統計方法
+  
+    * **檢定統計量 Z**：兩個模型的 AUC 差異較大
+  
+    * **p-value**：表明 AUC 之間的差異具有統計學意義。(**通常 p < 0.05 被認為是顯著的**)
+  
+    * **AUC 差異的 95% 信賴區間**：意味著我們有 95% 的信心認為真實的 AUC 差異在這個區間內。由於該區間不包含 0，這進一步支持 AUC 之間存在顯著差異的結論。
+  
+    * DeLong 檢定表明，兩條ROC曲線的 AUC 之間存在統計學上**顯著的差異**
+  
+  * 從**高Z值**、**極低的 p-value** 以及 **AUC 差異的信賴區間**可以看出 XGBoost **顯著**優於 null model
 
 
 ## **Feature Importance and Ranking**
