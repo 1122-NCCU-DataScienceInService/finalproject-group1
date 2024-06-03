@@ -20,5 +20,5 @@ Paperless Billing,客戶是否選擇無紙化計費,"Yes, No"
 Payment Method,客戶如何支付帳單,"Bank Withdrawal, Credit Card, Mailed Check"
 Monthly Charge,客戶目前每月為本公司提供的所有服務支付的總費用,Number
 Total Charges,截至上述指定季度末計算的客戶總費用,Number
-Tenure,客戶在公司工作的總月數,Number
+Tenure,客戶訂閱服務時間,Number
 Churn,是 = 客戶本季離開了公司；否 = 客戶仍留在公司,"Yes, No"
