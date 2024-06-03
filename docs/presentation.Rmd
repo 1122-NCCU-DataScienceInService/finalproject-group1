@@ -436,18 +436,18 @@ print(cv_result)
 ```
 
 
-  1. **高AUC評分**：約第 30 次反覆運算的 AUC 評分達到整個反覆運算過程中最高
+  1. **高AUC評分**：反覆運算的 AUC 評分達到整個反覆運算過程中最高
 
   2. **合理的標準差**：標準差相對較小，表明模型的性能在不同的交叉驗證折次中較為穩定
 
   
-    相比之下，後續的反覆運算雖然也達到了類似的 AUC 評分，但並沒有顯著超過第 30 次前後反覆運算的 AUC 評分，
+    相比之下，後續的反覆運算雖然也達到了類似的 AUC 評分，但並沒有顯著超過最佳迭代次數的 AUC 評分，
     而且有些反覆運算的 AUC 評分反而有所下降。
   
     例如：
-    超過第 30 次以後反覆運算的 test-auc 比第 30 次反覆運算低。
-    此外，在第 30 次以後反覆運算之後，儘管訓練集上的 AUC 評分（train-auc）不斷上升，
-    但測試集上的 AUC 評分並沒有明顯改善，甚至有所波動，這可能表明模型開始**over fitting**訓練數據。
+    超過最佳迭代次數後反覆運算的 test-auc 降低。
+    此外，在最佳迭代次數後，儘管訓練集上的 AUC 評分（train-auc）不斷上升，
+    但測試集上的 AUC 評分並沒有明顯改善，甚至有所波動，這可能表明模型開始 over fitting 訓練數據。
 
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -488,8 +488,18 @@ roc_test <- roc(test_data$Churn, test_pred)
 auc_train <- auc(roc_train)
 auc_test <- auc(roc_test)
 
+# Assuming roc_train_plot and roc_test_plot are ggplot objects for ROC curves
+roc_train_plot <- ggroc(roc_train) + ggtitle("ROC Curve - Training Data")
+roc_test_plot <- ggroc(roc_test) + ggtitle("ROC Curve - Testing Data")
+
+# Save ROC curves
+ggsave("roc_train.png", plot = roc_train_plot)
+ggsave("roc_test.png", plot = roc_test_plot)
+
 print(paste("AUC of training data: ", auc_train))
+print(roc_train_plot)
 print(paste("AUC of testing data: ", auc_test))
+print(roc_test_plot)
 ```
 
 ## **Null Model Comparison**
