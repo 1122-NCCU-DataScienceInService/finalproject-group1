@@ -686,3 +686,10 @@ print(plot)
 write.csv(test_lift_df, "lift_data.csv", row.names = FALSE)
 head(test_lift_df, 10)
 ```
+
+# Summary
+
+1. 企業可以針對模型預測流失機率高的用戶，優先進行挽留行動。
+2. 同時從 Lift Analysis 中，可以知道在第 3 群以後的客戶，不太需要有挽留行動。
+3. 企業可以從 Lift Analysis 跟模型的預測中，讓行銷的成本得以最有效的運用。
+4. 在這份報告中，我們建立了一個完整的預測客戶流失的流程，並運用數據分析做好客戶經營。
